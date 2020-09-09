@@ -1,3 +1,4 @@
+using FluentFolderizer.Tags;
 using NUnit.Framework;
 
 namespace FluentFolderizer.Tests
@@ -12,20 +13,19 @@ namespace FluentFolderizer.Tests
         [Test]
         public void Test1()
         {
+            var organizer = new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(path: "", recursive: false)
+                    .OrganizeInto(path: "")
+                    .HandleFilesBy(FileHandling.Move)
+                    .Organize()
+                        .By(AudioTag.Album)
+                        .ThenBy(AudioTag.Artist)
+                        .ThenBy(AudioTag.Genre)
+                    .Apply()
+                .Build();
 
-            //var organizer = new FluentOrganizerBuilder()
-            //    .ForAudioFiles()
-            //        .LocatedIn(path: "", recursive: false)
-            //        .OrganizeInto(path: "")
-            //        .HandleFilesBy(FileHandling.Move)
-            //        .Organize()
-            //            .By(AudioTag.Album)
-            //            .ThenBy(AudioTag.Artist)
-            //            .ThenBy(AudioTag.Genre)
-            //        .Apply()
-            //    .Build();
-
-            //organizer.Run();
+            organizer.Run();
         }
 
 

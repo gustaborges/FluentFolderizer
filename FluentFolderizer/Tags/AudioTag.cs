@@ -1,11 +1,14 @@
-﻿
-namespace FluentFolderizer
+﻿namespace FluentFolderizer.Tags
 {
     /// <summary>
     /// Tags commonly present in audio files.
     /// </summary>
     public enum AudioTag
     {
+        /// <summary>
+        /// Represents the album tag.
+        /// </summary>
+        Album, 
         /// <summary>
         /// Represents the artist tag.
         /// </summary>
@@ -17,10 +20,6 @@ namespace FluentFolderizer
         /// <summary>
         /// Represents the year tag.
         /// </summary>
-        Year,
-        /// <summary>
-        /// Represents the album tag.
-        /// </summary>
-        Album
+        Year
     }
-}
+}    
