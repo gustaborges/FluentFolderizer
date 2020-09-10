@@ -9,6 +9,22 @@ using System.Threading.Tasks;
 
 namespace FluentFolderizer.Audio
 {
+    public partial class FluentAudioOrganizer : IValidatable
+    {
+        internal FluentAudioOrganizer() { }
+
+        public void Validate()
+        {
+            if(BasePath is null)
+                throw new InvalidOperationException("Failed to build the organizer. The location of the files to be organized must be given.");
+
+            bool directoryStructureNotSet = _tagSequence.Count == 0;
+
+            if (directoryStructureNotSet)
+                throw new InvalidOperationException("Failed to build the organizer. The new desired directory structure must be given.");
+        }
+    }
+
     public partial class FluentAudioOrganizer : IOrganizer
     {
         public OrganizationResult Run()
@@ -84,24 +100,18 @@ namespace FluentFolderizer.Audio
 
     public partial class FluentAudioOrganizer : IOrganizerSettings
     {
-        private string _basePath;
         private string _mountingPath;
-
-        private string BasePath
-        {
-            get => _basePath ?? throw new Exception("The BasePath property has not been set.");
-            set => _basePath = Directory.Exists(value) ? value : throw new DirectoryNotFoundException("The given path leads to an inexistent directory.");
-        }
 
         private string MountingPath
         {
             get => _mountingPath ?? BasePath;
             set => _mountingPath = value;
         }
-
+        private string BasePath { get; set; }
         private FileHandling HandlingMethod { get; set; } = FileHandling.Copy;
         private uint MaxSearchDepth { get; set; }
 
+        IAudioDirectoryStructurer IOrganizerSettings.Organize => this;
 
         public IOrganizerSettings HandleFilesBy(FileHandling fileHandling)
         {
@@ -121,20 +131,16 @@ namespace FluentFolderizer.Audio
             return this;
         }
 
-        public IAudioDirectoryStructurer Organize()
-        {
-            return this;
-        }
-
         public IOrganizer Build()
         {
+            this.Validate();
             return this;
         }
     }
 
     public partial class FluentAudioOrganizer : IAudioDirectoryStructurer
     {
-        private IList<AudioTag> _tagSequence;
+        private IList<AudioTag> _tagSequence = new List<AudioTag>();
         private IAudioTagSequenceValidator _sequenceValidator = new AudioTagSequenceValidator();
 
 
