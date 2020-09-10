@@ -16,10 +16,5 @@ namespace FluentFolderizer
         {
             throw new NotImplementedException();
         }
-
-        public IOrganizer Build()
-        {
-            return _organizer;
-        }
     }
 }

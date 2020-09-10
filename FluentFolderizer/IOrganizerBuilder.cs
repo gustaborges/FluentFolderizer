@@ -2,7 +2,6 @@
 {
     public interface IOrganizerBuilder
     {
-        IOrganizer Build();
         IOrganizerSettings ForAudioFiles();
         IOrganizerSettings ForImageFiles();
     }
