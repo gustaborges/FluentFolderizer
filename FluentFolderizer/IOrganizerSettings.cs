@@ -5,12 +5,18 @@ namespace FluentFolderizer
     public interface IOrganizerSettings
     {
         /// <summary>
+        /// Provides options for setting the desired directory structure.
+        /// </summary>
+        /// <returns></returns>
+        IAudioDirectoryStructurer Organize { get; }
+
+        /// <summary>
         /// Defines where the files to be organized are located and optional search preference.
         /// </summary>
         /// <param name="path">The root path of the directory where the files to be organized are located</param>
         /// <param name="recursive">Settles whether to look for files recursively or not.</param>
         /// <returns></returns>
-        IOrganizerSettings LocatedIn(string path, bool recursive);
+        IOrganizerSettings LocatedIn(string path, bool recursive = false);
 
         /// <summary>
         /// Defines the directory where the desired folder structure along with the organized files will be located.
@@ -27,13 +33,7 @@ namespace FluentFolderizer
         IOrganizerSettings HandleFilesBy(FileHandling fileHandling);
 
         /// <summary>
-        /// Provides options for setting the desired directory structure.
-        /// </summary>
-        /// <returns></returns>
-        IAudioDirectoryStructurer Organize();
-
-        /// <summary>
-        /// Returns an <see cref="IOrganizer"/> configured according to the provided preferences.
+        /// Validates the organizer and returns an <see cref="IOrganizer"/> configured according to the provided preferences.
         /// </summary>
         /// <returns></returns>
         IOrganizer Build();
