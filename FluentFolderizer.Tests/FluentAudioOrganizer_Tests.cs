@@ -1,4 +1,5 @@
 using FluentFolderizer.Audio;
+using FluentFolderizer.DirectoryStructureValidators;
 using FluentFolderizer.Tags;
 using FluentFolderizer.Tests.Config;
 using NUnit.Framework;
@@ -8,20 +9,10 @@ namespace FluentFolderizer.Tests.Audio
 {
     public class FluentAudioOrganizer_Tests
     {
-        //var organizer = new FluentOrganizerBuilder()
-        //    .ForAudioFiles()
-        //        .LocatedIn(path: "", recursive: false)
-        //        .OrganizeInto(path: "")
-        //        .HandleFilesBy(FileHandling.Move)
-        //        .NewDirectoryStructure
-        //            .By(AudioTag.Album)
-        //            .ThenBy(AudioTag.Artist)
-        //            .ThenBy(AudioTag.Genre)
-        //        .Apply()
-        //    .Build();
+        #region Build()
 
         [Test]
-        public void WhenLocationOfFilesToBeOrganizedIsNotProvided_ShouldThrowInvalidOperationExceptionOnBuild()
+        public void Build_WhenLocationOfFilesToBeOrganizedIsNotProvided_ShouldThrowInvalidOperationException()
         {
 
             Assert.Throws<InvalidOperationException>(() => 
@@ -33,7 +24,7 @@ namespace FluentFolderizer.Tests.Audio
         }
 
         [Test]
-        public void WhenNewDesiredDirectoryStructureIsNotProvided_ShouldThrowInvalidOperationExceptionOnBuild()
+        public void Build_WhenNewDesiredDirectoryStructureIsNotProvided_ShouldThrowInvalidOperationException()
         {
 
             Assert.Throws<InvalidOperationException>(() =>
@@ -47,7 +38,7 @@ namespace FluentFolderizer.Tests.Audio
 
 
         [Test]
-        public void WhenNewDesiredDirectoryStructureAndLocationOfFilesAreProvided_ShouldSuccesfullyBuildTheInstance()
+        public void Build_WhenNewDesiredDirectoryStructureAndLocationOfFilesAreProvided_ShouldSuccesfullyReturnTheInstance()
         {
             new FluentOrganizerBuilder()
                 .ForAudioFiles()
@@ -59,5 +50,128 @@ namespace FluentFolderizer.Tests.Audio
         }
 
 
+        [Test]
+        public void Build_WhenNewDirectoryStructureContainsAlbumTagNotInLastPosition_ShouldThrowInvalidDirectoryStructureException()
+        {
+            Assert.Throws<InvalidDirectoryStructureException>(() =>
+            {
+                new FluentOrganizerBuilder()
+                    .ForAudioFiles()
+                        .LocatedIn(TestPaths.ValidBasePath)
+                        .Organize
+                            .By(AudioTag.Album)
+                            .ThenBy(AudioTag.Artist)
+                        .Apply()
+                    .Build();
+            });
+        }
+
+        [Test]
+        public void Build_WhenNewDirectoryStructureContainsDuplicateTag_ShouldThrowInvalidDirectoryStructureException()
+        {
+            Assert.Throws<InvalidDirectoryStructureException>(() =>
+            {
+                new FluentOrganizerBuilder()
+                    .ForAudioFiles()
+                        .LocatedIn(TestPaths.ValidBasePath)
+                        .Organize
+                            .By(AudioTag.Artist)
+                            .ThenBy(AudioTag.Artist)
+                        .Apply()
+                    .Build();
+            });
+        }
+
+
+        [Test]
+        public void Build_WhenNewDirectoryStructureIsValid_ShouldSuccesfullyReturnTheInstance()
+        {
+            new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(TestPaths.ValidBasePath)
+                    .Organize
+                        .By(AudioTag.Year)
+                        .ThenBy(AudioTag.Artist)
+                        .ThenBy(AudioTag.Album)
+                    .Apply()
+                .Build();
+        }
+
+
+
+        #endregion
+
+        #region TagSequence
+
+        [Test]
+        public void TagSequence_WhenNewDirectoryStructureIsValid_TagSequenceContainsFolderStructureInCorrectOrder()
+        {
+            FluentAudioOrganizer organizer = new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(TestPaths.ValidBasePath)
+                    .Organize
+                        .By(AudioTag.Year)
+                        .ThenBy(AudioTag.Artist)
+                        .ThenBy(AudioTag.Album)
+                    .Apply()
+                .Build() as FluentAudioOrganizer;
+
+            Assert.True(organizer.TagSequence[0] == AudioTag.Year);
+            Assert.True(organizer.TagSequence[1] == AudioTag.Artist);
+            Assert.True(organizer.TagSequence[2] == AudioTag.Album);
+        }
+
+        #endregion
+
+        #region MountingPath
+
+        [Test]
+        public void DestinationFolder_WhenMountingPathIsNotSpecified_MountingPathShouldEqualBasePath()
+        {
+            FluentAudioOrganizer organizer = new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(TestPaths.ValidBasePath)
+                    .Organize
+                        .By(AudioTag.Album)
+                    .Apply()
+                .Build() as FluentAudioOrganizer;
+
+            Assert.AreEqual(organizer.BasePath, organizer.MountingPath);
+        }
+
+        [Test]
+        public void DestinationFolder_WhenMountingPathIsSpecified_MountingPathShouldBeDifferentFromBasePath()
+        {
+            FluentAudioOrganizer organizer = new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(TestPaths.ValidBasePath)
+                    .DestinationFolder(TestPaths.ValidMountingPath)
+                    .Organize
+                        .By(AudioTag.Album)
+                    .Apply()
+                .Build() as FluentAudioOrganizer;
+
+            Assert.AreEqual(TestPaths.ValidMountingPath, organizer.MountingPath);
+        }
+        #endregion
+
+        #region FileHandlingMethod
+        
+        [Test]
+        public void FileHandlingMethod_WhenHandlingMethodIsNotSpecified_ShouldEqualToCopy()
+        {
+            FluentAudioOrganizer organizer = new FluentOrganizerBuilder()
+                .ForAudioFiles()
+                    .LocatedIn(TestPaths.ValidBasePath)
+                    .DestinationFolder(TestPaths.ValidMountingPath)
+                    .Organize
+                        .By(AudioTag.Album)
+                    .Apply()
+                .Build() as FluentAudioOrganizer;
+
+            Assert.AreEqual(FileHandlingMethods.Copy, organizer.FileHandlingMethod);
+        }
+        
+        #endregion
     }
 }

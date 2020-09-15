@@ -23,14 +23,14 @@ namespace FluentFolderizer
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        IOrganizerSettings OrganizeInto(string path);
+        IOrganizerSettings DestinationFolder(string path);
 
         /// <summary>
         /// Defines whether the files will be copied or moved to the new directory structure.
         /// </summary>
         /// <param name="fileHandling"></param>
         /// <returns></returns>
-        IOrganizerSettings HandleFilesBy(FileHandling fileHandling);
+        IOrganizerSettings HandleFilesBy(FileHandlingMethods fileHandling);
 
         /// <summary>
         /// Validates the organizer and returns an <see cref="IOrganizer"/> configured according to the provided preferences.
