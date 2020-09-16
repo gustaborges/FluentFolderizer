@@ -100,15 +100,32 @@ namespace FluentFolderizer.Audio
         private string GetTagValueFromFile(AudioTag tag, string filePath)
         {
             TagLib.File file = TagLib.File.Create(filePath);
+            string value;
 
             switch (tag)
             {
-                case AudioTag.Album: return file.Tag.Album;
-                case AudioTag.Artist: return file.Tag.FirstAlbumArtist;
-                case AudioTag.Year: return file.Tag.Year.ToString();
-                case AudioTag.Genre: return file.Tag.FirstGenre;
-                default: return String.Empty;
+                case AudioTag.Album: 
+                    value = file.Tag.Album;
+                    break;
+
+                case AudioTag.Artist: 
+                    value = !String.IsNullOrWhiteSpace(file.Tag.JoinedAlbumArtists) ? file.Tag.JoinedAlbumArtists : file.Tag.JoinedPerformers;
+                    break;
+                
+                case AudioTag.Year: 
+                    value = file.Tag.Year.ToString();
+                    break;
+
+                case AudioTag.Genre: 
+                    value = file.Tag.FirstGenre;
+                    break;
+
+                default:
+                    value = String.Empty;
+                    break;
             }
+
+            return String.IsNullOrWhiteSpace(value) ? $"Unknown {tag}" : value;
         }
 
         private bool NotAudioFile(string filePath) => !AudioFormats.ExtensionsList.Contains(Path.GetExtension(filePath));

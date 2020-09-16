@@ -1,13 +1,13 @@
 using FluentFolderizer.Audio;
 using FluentFolderizer.DirectoryStructureValidators;
 using FluentFolderizer.Tags;
-using FluentFolderizer.Tests.Config;
+using FluentFolderizer.Tests.Configs;
 using NUnit.Framework;
 using System;
 
-namespace FluentFolderizer.Tests.Audio
+namespace FluentFolderizer.Tests
 {
-    public class FluentAudioOrganizer_Tests
+    public class FluentAudioOrganizerTests_InstanceCreation
     {
         #region Build()
 
@@ -116,9 +116,9 @@ namespace FluentFolderizer.Tests.Audio
                     .Apply()
                 .Build() as FluentAudioOrganizer;
 
-            Assert.True(organizer.TagSequence[0] == AudioTag.Year);
-            Assert.True(organizer.TagSequence[1] == AudioTag.Artist);
-            Assert.True(organizer.TagSequence[2] == AudioTag.Album);
+            Assert.AreEqual(AudioTag.Year, organizer.TagSequence[0]);
+            Assert.AreEqual(AudioTag.Artist, organizer.TagSequence[1]);
+            Assert.AreEqual(AudioTag.Album, organizer.TagSequence[2]);
         }
 
         #endregion
@@ -171,7 +171,7 @@ namespace FluentFolderizer.Tests.Audio
 
             Assert.AreEqual(FileHandlingMethods.Copy, organizer.FileHandlingMethod);
         }
-        
+
         #endregion
     }
 }
