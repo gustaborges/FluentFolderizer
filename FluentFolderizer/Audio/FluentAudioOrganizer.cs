@@ -11,11 +11,27 @@ namespace FluentFolderizer.Audio
 {
     public partial class FluentAudioOrganizer : IValidatable
     {
+        private string _mountingPath;
+        private IList<AudioTag> _tagSequence = new List<AudioTag>();
+
+        public string MountingPath
+        {
+            get => _mountingPath ?? BasePath;
+            private set => _mountingPath = value;
+        }
+        public string BasePath { get; private set; }
+
+        public FileHandlingMethods FileHandlingMethod { get; private set; } = FileHandlingMethods.Copy;
+
+        public IReadOnlyList<AudioTag> TagSequence { get => _tagSequence as IReadOnlyList<AudioTag>; }
+
+        //private uint MaxSearchDepth { get; set; }
+
         internal FluentAudioOrganizer() { }
 
         public void Validate()
         {
-            if(BasePath is null)
+            if (BasePath is null)
                 throw new InvalidOperationException("Failed to build the organizer. The location of the files to be organized must be given.");
 
             bool directoryStructureNotSet = _tagSequence.Count == 0;
@@ -62,7 +78,7 @@ namespace FluentFolderizer.Audio
 
             Directory.CreateDirectory(finalDirectoryPath);
 
-            if (this.HandlingMethod == FileHandling.Move)
+            if (this.FileHandlingMethod == FileHandlingMethods.Move)
             {
                 File.Move(file, finalFilePath);
             }
@@ -84,15 +100,32 @@ namespace FluentFolderizer.Audio
         private string GetTagValueFromFile(AudioTag tag, string filePath)
         {
             TagLib.File file = TagLib.File.Create(filePath);
+            string value;
 
             switch (tag)
             {
-                case AudioTag.Album: return file.Tag.Album;
-                case AudioTag.Artist: return file.Tag.FirstAlbumArtist;
-                case AudioTag.Year: return file.Tag.Year.ToString();
-                case AudioTag.Genre: return file.Tag.FirstGenre;
-                default: return String.Empty;
+                case AudioTag.Album: 
+                    value = file.Tag.Album;
+                    break;
+
+                case AudioTag.Artist: 
+                    value = !String.IsNullOrWhiteSpace(file.Tag.JoinedAlbumArtists) ? file.Tag.JoinedAlbumArtists : file.Tag.JoinedPerformers;
+                    break;
+                
+                case AudioTag.Year: 
+                    value = file.Tag.Year.ToString();
+                    break;
+
+                case AudioTag.Genre: 
+                    value = file.Tag.FirstGenre;
+                    break;
+
+                default:
+                    value = String.Empty;
+                    break;
             }
+
+            return String.IsNullOrWhiteSpace(value) ? $"Unknown {tag}" : value;
         }
 
         private bool NotAudioFile(string filePath) => !AudioFormats.ExtensionsList.Contains(Path.GetExtension(filePath));
@@ -100,22 +133,11 @@ namespace FluentFolderizer.Audio
 
     public partial class FluentAudioOrganizer : IOrganizerSettings
     {
-        private string _mountingPath;
-
-        private string MountingPath
-        {
-            get => _mountingPath ?? BasePath;
-            set => _mountingPath = value;
-        }
-        private string BasePath { get; set; }
-        private FileHandling HandlingMethod { get; set; } = FileHandling.Copy;
-        private uint MaxSearchDepth { get; set; }
-
         IAudioDirectoryStructurer IOrganizerSettings.Organize => this;
 
-        public IOrganizerSettings HandleFilesBy(FileHandling fileHandling)
+        public IOrganizerSettings HandleFilesBy(FileHandlingMethods fileHandling)
         {
-            this.HandlingMethod = fileHandling;
+            this.FileHandlingMethod = fileHandling;
             return this;
         }
 
@@ -125,7 +147,7 @@ namespace FluentFolderizer.Audio
             return this;
         }
 
-        public IOrganizerSettings OrganizeInto(string path)
+        public IOrganizerSettings DestinationFolder(string path)
         {
             this.MountingPath = path;
             return this;
@@ -140,7 +162,6 @@ namespace FluentFolderizer.Audio
 
     public partial class FluentAudioOrganizer : IAudioDirectoryStructurer
     {
-        private IList<AudioTag> _tagSequence = new List<AudioTag>();
         private IAudioTagSequenceValidator _sequenceValidator = new AudioTagSequenceValidator();
 
 
@@ -151,15 +172,8 @@ namespace FluentFolderizer.Audio
             return this;
         }
 
-        public IAudioDirectoryStructurer ThenBy(AudioTag tag)
-        {
-            return By(tag);
-        }
+        public IAudioDirectoryStructurer ThenBy(AudioTag tag) => By(tag);
 
-        public IOrganizerSettings Apply()
-        {
-            return this;
-        }
+        public IOrganizerSettings Apply() => this;
     }
-
 }

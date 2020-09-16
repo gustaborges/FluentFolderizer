@@ -1,6 +1,6 @@
 ﻿namespace FluentFolderizer
 {
-    public enum FileHandling
+    public enum FileHandlingMethods
     {
         Move, Copy
     }
